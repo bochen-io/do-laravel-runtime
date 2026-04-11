@@ -34,7 +34,7 @@ echo "🔨 Installing PHP extensions..."
 # Core Extensions (always installed)
 # ============================================================================
 
-CORE_EXTENSIONS="pdo pdo_mysql pdo_pgsql pgsql zip intl mbstring curl opcache pcntl sockets"
+CORE_EXTENSIONS="pdo pdo_mysql pdo_pgsql pgsql zip intl mbstring curl opcache pcntl sockets exif"
 
 echo "📦 Installing core extensions..."
 echo "   Extensions: ${CORE_EXTENSIONS}"
