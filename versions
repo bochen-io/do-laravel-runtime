@@ -12,9 +12,8 @@ COMPOSER_VERSION=2
 SWOOLE_VERSION=25.2.0
 
 # Cloudflared Version (optional - leave empty to skip installation)
-# Set to a version like "2025.10.0" to include cloudflared
-# Latest: https://github.com/cloudflare/cloudflared/releases
-CLOUDFLARED_VERSION=2025.10.0
+# Not needed — cloudflared runs as separate container in DO App Platform
+CLOUDFLARED_VERSION=
 
 # Image Tag (automatically constructed from versions)
 # Format: php{PHP_MAJOR}.{PHP_MINOR}-swoole{SWOOLE_VERSION}[-cloudflared{CLOUDFLARED_VERSION}]

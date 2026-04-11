@@ -102,7 +102,6 @@ echo "Building Docker image with:"
 echo "  PHP_VERSION: $PHP_VERSION"
 echo "  SWOOLE_VERSION: $SWOOLE_VERSION"
 echo "  COMPOSER_VERSION: $COMPOSER_VERSION"
-echo "  CLOUDFLARED_VERSION: $CLOUDFLARED_VERSION"
 echo "  PLATFORM: $PLATFORM"
 echo "  TAGS: ${TAGS[*]}"
 echo ""
@@ -112,7 +111,6 @@ docker buildx build \
     --build-arg PHP_VERSION="$PHP_VERSION" \
     --build-arg SWOOLE_VERSION="$SWOOLE_VERSION" \
     --build-arg COMPOSER_VERSION="$COMPOSER_VERSION" \
-    --build-arg CLOUDFLARED_VERSION="$CLOUDFLARED_VERSION" \
     --build-arg BUILD_DATE="$BUILD_DATE" \
     --build-arg VCS_REF="$VCS_REF" \
     --platform "$PLATFORM" \
