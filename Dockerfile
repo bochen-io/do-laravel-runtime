@@ -46,6 +46,7 @@ RUN apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
+    libwebp-dev \
     libzip-dev \
     postgresql-dev \
     icu-dev \
@@ -91,6 +92,7 @@ RUN apk add --no-cache \
     libpng \
     libjpeg-turbo \
     freetype \
+    libwebp \
     # Archive support \
     libzip \
     # Database support \

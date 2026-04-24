@@ -54,9 +54,9 @@ if [ -n "${BUILD_EXTRA_EXTENSIONS}" ]; then
     for ext in ${BUILD_EXTRA_EXTENSIONS}; do
         case "$ext" in
             gd)
-                echo "   ✓ Enabling GD (image processing)"
+                echo "   ✓ Enabling GD (image processing + WEBP)"
                 OPTIONAL_EXTENSIONS="${OPTIONAL_EXTENSIONS} gd"
-                CONFIGURE_COMMANDS="${CONFIGURE_COMMANDS} && docker-php-ext-configure gd --with-freetype --with-jpeg"
+                CONFIGURE_COMMANDS="${CONFIGURE_COMMANDS} && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp"
                 ;;
             xml)
                 echo "   ✓ Enabling XML"
