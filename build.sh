@@ -10,16 +10,18 @@
 #   ./build.sh [options]
 #
 # Options:
-#   --tag <tag>         Additional tag (can be used multiple times)
-#   --label <label>     Additional label (can be used multiple times)
-#   --push              Push the image after building
-#   --platform <plat>   Target platform (default: linux/amd64)
-#   --cache-from <src>  Cache source
-#   --cache-to <dst>    Cache destination
+#   --tag <tag>          Additional tag (can be used multiple times)
+#   --label <label>      Additional label (can be used multiple times)
+#   --push               Push the image after building
+#   --platform <plat>    Target platform (default: linux/amd64)
+#   --php-version <ver>  PHP base image tag (overrides PHP_VERSION from versions)
+#   --cache-from <src>   Cache source
+#   --cache-to <dst>     Cache destination
 #
 # Examples:
 #   ./build.sh                                    # Simple local build
 #   ./build.sh --tag my-runtime                   # Local build with custom tag
+#   ./build.sh --php-version 8.5-cli-alpine       # Build against PHP 8.5
 #   ./build.sh --tag latest --tag v1.0.0 --push   # Multi-tag with push
 #
 # ════════════════════════════════════════════════════════════════
@@ -64,6 +66,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --platform)
             PLATFORM="$2"
+            shift 2
+            ;;
+        --php-version)
+            PHP_VERSION="$2"
             shift 2
             ;;
         --cache-from)

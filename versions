@@ -2,14 +2,19 @@
 # Component Versions - DigitalOcean Laravel Runtime
 # ════════════════════════════════════════════════════════════════
 
-# PHP Version (Alpine variant)
+# PHP Version (Alpine variant) - default used when --php-version is not passed
 PHP_VERSION=8.4-cli-alpine
+
+# Supported PHP versions (space-separated, built as separate images in CI)
+# The first entry is the "default" one — it also gets the bare `latest` tag.
+PHP_VERSIONS="8.4-cli-alpine 8.5-cli-alpine"
 
 # Composer Version
 COMPOSER_VERSION=2
 
 # OpenSwoole Version
-SWOOLE_VERSION=25.2.0
+# 26.x is required for PHP 8.5 (and drops PHP 8.2 support)
+SWOOLE_VERSION=26.2.0
 
 # Cloudflared Version (optional - leave empty to skip installation)
 # Not needed — cloudflared runs as separate container in DO App Platform

@@ -34,7 +34,17 @@ echo "🔨 Installing PHP extensions..."
 # Core Extensions (always installed)
 # ============================================================================
 
-CORE_EXTENSIONS="pdo pdo_mysql pdo_pgsql pgsql zip intl mbstring curl opcache pcntl sockets exif"
+PHP_VERSION_ID="$(php -r 'echo PHP_VERSION_ID;')"
+
+CORE_EXTENSIONS="pdo pdo_mysql pdo_pgsql pgsql zip intl mbstring curl pcntl sockets exif calendar"
+
+# OPcache: shared extension up to PHP 8.4, compiled into the binary since 8.5.
+# Running docker-php-ext-install opcache on 8.5 builds no .so and fails.
+if [ "${PHP_VERSION_ID}" -lt 80500 ]; then
+    CORE_EXTENSIONS="${CORE_EXTENSIONS} opcache"
+else
+    echo "ℹ️  OPcache is built into PHP ${PHP_VERSION_ID} — skipping separate install"
+fi
 
 echo "📦 Installing core extensions..."
 echo "   Extensions: ${CORE_EXTENSIONS}"

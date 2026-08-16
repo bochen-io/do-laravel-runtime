@@ -3,18 +3,19 @@
 # ════════════════════════════════════════════════════════════════
 #
 # Optimized base image for Laravel Octane applications with:
-# - PHP CLI (Alpine Linux) - Version set in 'versions' file
+# - PHP CLI (Alpine Linux) - Version set in 'versions' file (8.4 and 8.5 supported)
 # - OpenSwoole - High-performance async runtime - Version set in 'versions' file
 # - Composer - Dependency management - Version set in 'versions' file
 # - Supervisord - Process control system
 # - PostgreSQL support - Optimized for DO managed databases
 #
 # Usage:
-#   FROM ghcr.io/bochen-io/do-laravel-runtime:latest
+#   FROM ghcr.io/bochen-io/do-laravel-runtime:latest    # PHP 8.4
+#   FROM ghcr.io/bochen-io/do-laravel-runtime:php8.5    # PHP 8.5
 #
-# Build with custom versions:
-#   docker build --build-arg PHP_VERSION=8.4-cli-alpine \
-#                --build-arg SWOOLE_VERSION=25.2.0 \
+# Build with custom versions (or use ./build.sh --php-version 8.5-cli-alpine):
+#   docker build --build-arg PHP_VERSION=8.5-cli-alpine \
+#                --build-arg SWOOLE_VERSION=26.2.0 \
 #                --build-arg COMPOSER_VERSION=2 \
 #                -t my-runtime .
 #

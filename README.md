@@ -5,7 +5,7 @@
 Optimized for cost-effective deployments starting at **$5/month** (512MB RAM).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777BB4.svg)](https://www.php.net/)
+[![PHP 8.4 | 8.5](https://img.shields.io/badge/PHP-8.4%20%7C%208.5-777BB4.svg)](https://www.php.net/)
 [![Laravel Octane](https://img.shields.io/badge/Laravel-Octane-FF2D20.svg)](https://laravel.com/docs/octane)
 
 ## 🎯 What is this?
@@ -17,24 +17,30 @@ Perfect for developers looking to deploy high-performance Laravel apps cost-effe
 ## 📦 Image Registry
 
 ```bash
-docker pull ghcr.io/mente-io/do-laravel-runtime:latest
+# PHP 8.4 (default — `latest` points here)
+docker pull ghcr.io/bochen-io/do-laravel-runtime:latest
+docker pull ghcr.io/bochen-io/do-laravel-runtime:php8.4
+
+# PHP 8.5
+docker pull ghcr.io/bochen-io/do-laravel-runtime:php8.5
 ```
 
 ## 🏗️ What's Included
 
 ### Runtime Components
-- **PHP 8.4 CLI** (Alpine Linux)
-- **OpenSwoole 22.1.2** - High-performance async runtime for Laravel Octane
+- **PHP 8.4 or 8.5 CLI** (Alpine Linux) - published as separate images
+- **OpenSwoole 26.2.0** - High-performance async runtime for Laravel Octane
 - **Supervisor** - Multi-process management
 - **Composer 2** - Dependency management
-- **Node.js 20 + pnpm** - Frontend asset building
 
 ### PHP Extensions
-- **Database**: PDO (MySQL, PostgreSQL)
-- **Image Processing**: GD with FreeType/JPEG
-- **Text & Data**: intl, mbstring, xml, zip
-- **Performance**: OPcache (production-optimized), Redis
+- **Database**: PDO (MySQL, PostgreSQL), pgsql
+- **Image Processing**: GD with FreeType/JPEG/WEBP, exif
+- **Text & Data**: intl, mbstring, xml, zip, calendar
+- **Performance**: OPcache + JIT (production-optimized)
 - **System**: sockets, pcntl, bcmath, curl
+
+Optional extensions (`redis` among them) are controlled by `BUILD_EXTRA_EXTENSIONS` in the `values-php` file.
 
 ### System Tools
 - PostgreSQL client (`psql`)
@@ -46,7 +52,7 @@ docker pull ghcr.io/mente-io/do-laravel-runtime:latest
 ### Basic Laravel Octane Dockerfile
 
 ```dockerfile
-FROM ghcr.io/mente-io/do-laravel-runtime:latest
+FROM ghcr.io/bochen-io/do-laravel-runtime:latest
 
 WORKDIR /var/www
 
@@ -98,17 +104,23 @@ databases:
 
 ### PHP Settings (Pre-configured)
 
+Defaults come from the `values-php` file — change them there and rebuild:
+
 ```ini
-memory_limit = 512M
-upload_max_filesize = 50M
-post_max_size = 50M
-max_execution_time = 60s
+memory_limit = 256M
+upload_max_filesize = 5M
+post_max_size = 5M
+max_execution_time = 60
 
 ; OPcache (Production-optimized)
 opcache.enable = 1
-opcache.memory_consumption = 256
-opcache.max_accelerated_files = 10000
+opcache.memory_consumption = 96
+opcache.max_accelerated_files = 16229
 opcache.validate_timestamps = 0  ; Disable for production
+
+; JIT (tracing mode)
+opcache.jit_buffer_size = 48M
+opcache.jit = 1255
 ```
 
 ### Exposed Ports
@@ -197,29 +209,41 @@ envs:
 ### Build Locally
 
 ```bash
-git clone https://github.com/mente-io/do-laravel-runtime.git
+git clone https://github.com/bochen-io/do-laravel-runtime.git
 cd do-laravel-runtime
-docker build -t do-laravel-runtime:local .
+
+# Default PHP version (from the `versions` file)
+./build.sh --tag do-laravel-runtime:local
+
+# Explicit PHP version
+./build.sh --php-version 8.5-cli-alpine --tag do-laravel-runtime:php8.5
 ```
 
 ### Test
 
 ```bash
 # Verify PHP version
-docker run --rm ghcr.io/mente-io/do-laravel-runtime:latest php -v
+docker run --rm ghcr.io/bochen-io/do-laravel-runtime:latest php -v
 
 # Verify Swoole
-docker run --rm ghcr.io/mente-io/do-laravel-runtime:latest php --ri openswoole
+docker run --rm ghcr.io/bochen-io/do-laravel-runtime:latest php --ri openswoole
 
 # Start test container
-docker run -it --rm -p 8000:8000 ghcr.io/mente-io/do-laravel-runtime:latest
+docker run -it --rm -p 8000:8000 ghcr.io/bochen-io/do-laravel-runtime:latest
 ```
 
 ## 🏷️ Available Tags
 
-- `latest` - Latest stable build
-- `{version}` - Semantic versioning (e.g., `v1.0.0`)
-- `{git-sha}` - Specific commit builds
+Every image is built separately for each supported PHP version. Tags without a
+`-php*` suffix always point at the **default PHP version (8.4)**.
+
+| Tag | Content |
+|-----|---------|
+| `latest` | Latest build on `main`, PHP 8.4 |
+| `php8.4` / `php8.5` | Latest build on `main` for the given PHP version |
+| `{version}` | Release (e.g. `1.0.0`), PHP 8.4 |
+| `{version}-php8.4` / `{version}-php8.5` | Release for the given PHP version |
+| `main-{git-sha}-php8.4` | Specific commit for the given PHP version |
 
 ## 💡 Use Cases
 

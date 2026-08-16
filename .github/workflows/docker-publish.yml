@@ -22,6 +22,19 @@ jobs:
       contents: read
       packages: write
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `is_default: true` → this build also gets the unqualified tags
+          # (`latest`, `1.2.3`) so existing consumers keep pulling PHP 8.4.
+          - php: "8.4"
+            is_default: true
+          - php: "8.5"
+            is_default: false
+
+    name: build (php${{ matrix.php }})
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,19 +54,33 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Every tag is qualified with -php<version> so the two matrix jobs
+          # never overwrite each other. Only the default PHP build publishes
+          # the unqualified `latest` / semver tags.
+          flavor: |
+            latest=false
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=php${{ matrix.php }},enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ matrix.is_default && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=ref,event=branch,suffix=-php${{ matrix.php }}
+            type=ref,event=pr,suffix=-php${{ matrix.php }}
+            type=sha,prefix={{branch}}-,suffix=-php${{ matrix.php }}
+            type=semver,pattern={{version}},suffix=-php${{ matrix.php }}
+            type=semver,pattern={{major}}.{{minor}},suffix=-php${{ matrix.php }}
+            type=semver,pattern={{major}},suffix=-php${{ matrix.php }}
+            type=semver,pattern={{version}},enable=${{ matrix.is_default }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ matrix.is_default }}
+            type=semver,pattern={{major}},enable=${{ matrix.is_default }}
 
       - name: Build and push Docker image
         env:
           BUILD_DATE: ${{ github.event.head_commit.timestamp }}
           VCS_REF: ${{ github.sha }}
+          META_TAGS: ${{ steps.meta.outputs.tags }}
+          META_LABELS: ${{ steps.meta.outputs.labels }}
+          PHP_VERSION_TAG: ${{ matrix.php }}-cli-alpine
+          CACHE_SCOPE: php${{ matrix.php }}
+          IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
         run: |
           # Prepare build.sh arguments from metadata
           BUILD_ARGS=()
@@ -61,22 +88,23 @@ jobs:
           # Add tags
           while IFS= read -r tag; do
             [ -n "$tag" ] && BUILD_ARGS+=(--tag "$tag")
-          done <<< "${{ steps.meta.outputs.tags }}"
+          done <<< "$META_TAGS"
 
           # Add labels
           while IFS= read -r label; do
             [ -n "$label" ] && BUILD_ARGS+=(--label "$label")
-          done <<< "${{ steps.meta.outputs.labels }}"
+          done <<< "$META_LABELS"
 
-          # Add cache settings
-          BUILD_ARGS+=(--cache-from "type=gha")
-          BUILD_ARGS+=(--cache-to "type=gha,mode=max")
+          # Add cache settings (scoped per PHP version so matrix jobs
+          # don't overwrite each other's layers)
+          BUILD_ARGS+=(--cache-from "type=gha,scope=$CACHE_SCOPE")
+          BUILD_ARGS+=(--cache-to "type=gha,mode=max,scope=$CACHE_SCOPE")
 
           # Add push flag for non-PR builds
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
+          if [ "$IS_PULL_REQUEST" != "true" ]; then
             BUILD_ARGS+=(--push)
           fi
 
           # Run build script
           chmod +x build.sh
-          ./build.sh "${BUILD_ARGS[@]}"
+          ./build.sh --php-version "$PHP_VERSION_TAG" "${BUILD_ARGS[@]}"
