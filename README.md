@@ -32,6 +32,7 @@ docker pull ghcr.io/bochen-io/do-laravel-runtime:php8.5
 - **OpenSwoole 26.2.0** - High-performance async runtime for Laravel Octane
 - **Supervisor** - Multi-process management
 - **Composer 2** - Dependency management
+- **Node.js 24 (active LTS) + npm + pnpm** - Frontend asset building
 
 ### PHP Extensions
 - **Database**: PDO (MySQL, PostgreSQL), pgsql

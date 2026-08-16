@@ -14,6 +14,12 @@ PHP_VERSIONS="8.4-cli-alpine 8.5-cli-alpine"
 # Composer Version
 COMPOSER_VERSION=2
 
+# Node.js major version (frontend asset building)
+# 24 is the active LTS (maintenance until 2028-04-30); 22 is already in
+# security-only maintenance. Pinned via the official node:<version>-alpine
+# image so a future Alpine base bump cannot silently move the major.
+NODE_VERSION=24
+
 # OpenSwoole Version
 # 26.x is required for PHP 8.5 (and drops PHP 8.2 support)
 SWOOLE_VERSION=26.2.0

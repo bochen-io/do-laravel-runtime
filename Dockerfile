@@ -29,6 +29,7 @@
 ARG PHP_VERSION
 ARG SWOOLE_VERSION
 ARG COMPOSER_VERSION
+ARG NODE_VERSION
 
 FROM php:${PHP_VERSION} AS builder
 
@@ -71,6 +72,17 @@ ARG COMPOSER_VERSION
 FROM composer:${COMPOSER_VERSION} AS composer
 
 # ============================================================================
+# Node Stage - Node.js binary source
+# ============================================================================
+#
+# Alpine's repository only carries whatever Node major the base release
+# happens to ship, so the major is pinned via the official Node image and
+# a future Alpine bump cannot move it silently.
+#
+ARG NODE_VERSION
+FROM node:${NODE_VERSION}-alpine AS node
+
+# ============================================================================
 # Final Stage - Minimal runtime image
 # ============================================================================
 
@@ -78,6 +90,7 @@ FROM composer:${COMPOSER_VERSION} AS composer
 ARG PHP_VERSION
 ARG SWOOLE_VERSION
 ARG COMPOSER_VERSION
+ARG NODE_VERSION
 
 FROM php:${PHP_VERSION}
 
@@ -87,6 +100,7 @@ LABEL org.opencontainers.image.source="https://github.com/bochen-io/do-laravel-r
 LABEL php.version="${PHP_VERSION}"
 LABEL swoole.version="${SWOOLE_VERSION}"
 LABEL composer.version="${COMPOSER_VERSION}"
+LABEL node.version="${NODE_VERSION}"
 # Install only runtime dependencies
 RUN apk add --no-cache \
     # Image libraries \
@@ -107,6 +121,8 @@ RUN apk add --no-cache \
     libxml2 \
     # Network \
     curl \
+    # Node.js runtime dependencies \
+    libstdc++ \
     # Version control \
     git \
     # Utilities \
@@ -124,6 +140,17 @@ COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
 # Copy Composer from composer stage
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+# Copy Node.js + npm from node stage (frontend asset building)
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
+COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+
+# Restore the npm/npx entrypoints and add pnpm
+RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
+    npm install -g pnpm && \
+    npm cache clean --force && \
+    node -v && npm -v && pnpm -v
 
 # Copy configuration script and configure PHP
 COPY values-php /tmp/values-php

@@ -15,6 +15,7 @@
 #   --push               Push the image after building
 #   --platform <plat>    Target platform (default: linux/amd64)
 #   --php-version <ver>  PHP base image tag (overrides PHP_VERSION from versions)
+#   --node-version <v>   Node.js major (overrides NODE_VERSION from versions)
 #   --cache-from <src>   Cache source
 #   --cache-to <dst>     Cache destination
 #
@@ -72,6 +73,10 @@ while [[ $# -gt 0 ]]; do
             PHP_VERSION="$2"
             shift 2
             ;;
+        --node-version)
+            NODE_VERSION="$2"
+            shift 2
+            ;;
         --cache-from)
             CACHE_FROM="--cache-from $2"
             shift 2
@@ -108,6 +113,7 @@ echo "Building Docker image with:"
 echo "  PHP_VERSION: $PHP_VERSION"
 echo "  SWOOLE_VERSION: $SWOOLE_VERSION"
 echo "  COMPOSER_VERSION: $COMPOSER_VERSION"
+echo "  NODE_VERSION: $NODE_VERSION"
 echo "  PLATFORM: $PLATFORM"
 echo "  TAGS: ${TAGS[*]}"
 echo ""
@@ -117,6 +123,7 @@ docker buildx build \
     --build-arg PHP_VERSION="$PHP_VERSION" \
     --build-arg SWOOLE_VERSION="$SWOOLE_VERSION" \
     --build-arg COMPOSER_VERSION="$COMPOSER_VERSION" \
+    --build-arg NODE_VERSION="$NODE_VERSION" \
     --build-arg BUILD_DATE="$BUILD_DATE" \
     --build-arg VCS_REF="$VCS_REF" \
     --platform "$PLATFORM" \
