@@ -113,8 +113,9 @@ RUN apk add --no-cache \
     # Database support \
     postgresql-client \
     postgresql-libs \
-    # Internationalization \
+    # Internationalization: icu-libs carries English only, icu-data-full every locale \
     icu-libs \
+    icu-data-full \
     # String processing \
     oniguruma \
     # XML processing \
