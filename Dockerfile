@@ -159,6 +159,10 @@ RUN chmod +x /tmp/configure-php.sh && \
     /tmp/configure-php.sh && \
     rm /tmp/values-php /tmp/configure-php.sh
 
+# CVE-2026-109618/109619 (PHP2Shell): the advised workaround turns upload progress tracking off.
+# Off for good, nothing here uses it; PHP_INI_PERDIR, so ini_set cannot turn it back on.
+RUN echo "session.upload_progress.enabled = Off" > /usr/local/etc/php/conf.d/zz-upload-progress-off.ini
+
 # Create application directory
 WORKDIR /var/www
 
