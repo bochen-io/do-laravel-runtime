@@ -29,8 +29,10 @@ jobs:
           # `is_default: true` → this build also gets the unqualified tags
           # (`latest`, `1.2.3`) so existing consumers keep pulling PHP 8.4.
           - php: "8.4"
+            patch: "8.4.27"
             is_default: true
           - php: "8.5"
+            patch: "8.5.12"
             is_default: false
 
     name: build (php${{ matrix.php }})
@@ -78,7 +80,7 @@ jobs:
           VCS_REF: ${{ github.sha }}
           META_TAGS: ${{ steps.meta.outputs.tags }}
           META_LABELS: ${{ steps.meta.outputs.labels }}
-          PHP_VERSION_TAG: ${{ matrix.php }}-cli-alpine
+          PHP_VERSION_TAG: ${{ matrix.patch }}-cli-alpine
           CACHE_SCOPE: php${{ matrix.php }}
           IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
         run: |
