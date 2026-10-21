@@ -64,7 +64,7 @@ jobs:
             type=raw,value=latest,enable=${{ matrix.is_default && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
             type=ref,event=branch,suffix=-php${{ matrix.php }}
             type=ref,event=pr,suffix=-php${{ matrix.php }}
-            type=sha,prefix={{branch}}-,suffix=-php${{ matrix.php }}
+            type=sha,prefix={{branch}}-,suffix=-php${{ matrix.php }},enable=${{ github.event_name == 'push' }}
             type=semver,pattern={{version}},suffix=-php${{ matrix.php }}
             type=semver,pattern={{major}}.{{minor}},suffix=-php${{ matrix.php }}
             type=semver,pattern={{major}},suffix=-php${{ matrix.php }}
