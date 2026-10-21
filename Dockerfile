@@ -162,6 +162,11 @@ RUN chmod +x /tmp/configure-php.sh && \
 # CVE-2026-109618/109619 (PHP2Shell): the advised workaround turns upload progress tracking off.
 # Off for good, nothing here uses it; PHP_INI_PERDIR, so ini_set cannot turn it back on.
 RUN echo "session.upload_progress.enabled = Off" > /usr/local/etc/php/conf.d/zz-upload-progress-off.ini
+# CVE-2026-109619 on 8.5: fatal error backtraces are the other confirmed producer. Off for good;
+# 8.4 has no such directive, and an unknown one in conf.d is only noise.
+RUN if php -r "exit(PHP_VERSION_ID >= 80500 ? 0 : 1);"; then \
+        echo "fatal_error_backtraces = Off" > /usr/local/etc/php/conf.d/zz-fatal-error-backtraces-off.ini; \
+    fi
 
 # Create application directory
 WORKDIR /var/www
