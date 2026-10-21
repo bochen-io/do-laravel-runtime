@@ -117,7 +117,16 @@ echo "🔨 Installing PECL extensions..."
 # OpenSwoole (required for Laravel Octane)
 if [ -n "${SWOOLE_VERSION}" ]; then
     echo "📦 Installing OpenSwoole ${SWOOLE_VERSION}"
-    pecl install "openswoole-${SWOOLE_VERSION}"
+    # PECL goes down exactly when everyone rebuilds for a PHP security release;
+    # the same version from the GitHub tag, built with the same defaults pecl uses.
+    if ! pecl install "openswoole-${SWOOLE_VERSION}"; then
+        echo "⚠️  PECL unavailable, building OpenSwoole ${SWOOLE_VERSION} from the GitHub tag"
+        mkdir -p /tmp/openswoole
+        curl -fsSL "https://github.com/openswoole/ext-openswoole/archive/refs/tags/v${SWOOLE_VERSION}.tar.gz" \
+            | tar -xz -C /tmp/openswoole --strip-components=1
+        (cd /tmp/openswoole && phpize && ./configure && make -j"$(nproc)" && make install)
+        rm -rf /tmp/openswoole
+    fi
     docker-php-ext-enable openswoole
     echo "✅ OpenSwoole ${SWOOLE_VERSION} installed"
 else
