@@ -117,7 +117,21 @@ echo "🔨 Installing PECL extensions..."
 # OpenSwoole (required for Laravel Octane)
 if [ -n "${SWOOLE_VERSION}" ]; then
     echo "📦 Installing OpenSwoole ${SWOOLE_VERSION}"
-    pecl install "openswoole-${SWOOLE_VERSION}"
+    # PECL goes down exactly when everyone rebuilds for a PHP security release;
+    # the same version from the GitHub tag, built with the same defaults pecl uses.
+    # Tags can move, so the archive is pinned: bumping SWOOLE_VERSION without
+    # updating this hash makes the fallback fail instead of building unverified code.
+    OPENSWOOLE_TARBALL_SHA256="0dd86480a3e4f6ad5474bbdf441facc656dba668adceab93a35dbfe2e4d57e70" # v26.2.0
+    if ! pecl install "openswoole-${SWOOLE_VERSION}"; then
+        echo "⚠️  PECL unavailable, building OpenSwoole ${SWOOLE_VERSION} from the GitHub tag"
+        mkdir -p /tmp/openswoole
+        curl -fsSL -o /tmp/openswoole.tar.gz \
+            "https://github.com/openswoole/ext-openswoole/archive/refs/tags/v${SWOOLE_VERSION}.tar.gz"
+        echo "${OPENSWOOLE_TARBALL_SHA256}  /tmp/openswoole.tar.gz" | sha256sum -c -
+        tar -xzf /tmp/openswoole.tar.gz -C /tmp/openswoole --strip-components=1
+        (cd /tmp/openswoole && phpize && ./configure && make -j"$(nproc)" && make install)
+        rm -rf /tmp/openswoole /tmp/openswoole.tar.gz
+    fi
     docker-php-ext-enable openswoole
     echo "✅ OpenSwoole ${SWOOLE_VERSION} installed"
 else
